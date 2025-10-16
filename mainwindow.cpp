@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QRegularExpression>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -17,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnNum_8, SIGNAL(clicked()),this,SLOT(btnNumClicked()));
     connect(ui->btnNum_9, SIGNAL(clicked()),this,SLOT(btnNumClicked()));
 
+    connect(ui->btn_Multiple, SIGNAL(clicked()),this,SLOT(btnBinaryOperatorClicked()));
 }
 
 MainWindow::~MainWindow()
@@ -26,32 +29,65 @@ MainWindow::~MainWindow()
 
 void MainWindow::btnNumClicked()
 {
-    QString str = ui->display->text();
+    operand = ui->display->text();
     QString btnText = qobject_cast<QPushButton*>(sender())->text();
 
-    if(str == "0")
-        str = btnText;
-    else
-        str += btnText;
+    // 如果显示内容不是纯数字或小数，说明是运算符/错误提示等，重新开始输入
+    bool isNumber = QRegularExpression("^[0-9]*\\.?[0-9]*$").match(operand).hasMatch();
+    if (!isNumber) {
+        operand = "";
+    }
 
-    ui->display->setText(str);
+    if(operand == "0")
+        operand = btnText;
+    else
+        operand += btnText;
+
+    ui->display->setText(operand);
+}
+
+void MainWindow::btnBinaryOperatorClicked()
+{
+    if(!operand.isEmpty()){
+        if(operand[operand.length() - 1] == ".")
+        {
+            ui->display->setText("操作数无效");
+            return;
+        }
+        operands.push_back(operand);
+        operand.clear();
+    }
+    ui->display->setText(operand);
 }
 
 void MainWindow::on_btnPeriod_clicked()
 {
-    QString str = ui->display->text();
-    if(!str.contains("."))
-        str += qobject_cast<QPushButton*>(sender())->text();
+    if(operand.isEmpty())
+        operand = "0";
+    if(!operand.contains("."))
+        operand += qobject_cast<QPushButton*>(sender())->text();
 
-    ui->display->setText(str);
+    ui->display->setText(operand);
 }
 
 
 void MainWindow::on_btnDel_clicked()
 {
-    QString str = ui->display->text();
-    str = str.left(str.length() - 1);
+    if (!operand.isEmpty()) {
+        operand.chop(1);  // 更安全的删除最后一个字符
+    }
 
-    ui->display->setText(str);
+    // 删除后若为空，可显示 0
+    if (operand.isEmpty()) operand = "0";
+
+    ui->display->setText(operand);
+}
+
+
+void MainWindow::on_btnClear_clicked()
+{
+    operand = "0";
+
+    ui->display->setText(operand);
 }
 

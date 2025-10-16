@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QStack>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,12 +18,18 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    QString operand = "";
+    QStack<QString> operands;
+
 private slots:
     void btnNumClicked();
+    void btnBinaryOperatorClicked();
 
     void on_btnPeriod_clicked();
 
     void on_btnDel_clicked();
+
+    void on_btnClear_clicked();
 
 private:
     Ui::MainWindow *ui;
