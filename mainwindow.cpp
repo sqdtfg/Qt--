@@ -19,7 +19,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnNum_8, SIGNAL(clicked()),this,SLOT(btnNumClicked()));
     connect(ui->btnNum_9, SIGNAL(clicked()),this,SLOT(btnNumClicked()));
 
-    connect(ui->btn_Multiple, SIGNAL(clicked()),this,SLOT(btnBinaryOperatorClicked()));
+    connect(ui->btnMultiple, SIGNAL(clicked()),this,SLOT(btnBinaryOperatorClicked()));
+    connect(ui->btnDivide, SIGNAL(clicked()), this, SLOT(btnBinaryOperatorClicked()));
+    connect(ui->btnPlus, SIGNAL(clicked()), this, SLOT(btnBinaryOperatorClicked()));
+    connect(ui->btnMinus, SIGNAL(clicked()), this, SLOT(btnBinaryOperatorClicked()));
 }
 
 MainWindow::~MainWindow()
@@ -29,6 +32,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::btnNumClicked()
 {
+    if (justCalculated) { // 如果刚计算完一次结果，则清空状态，开始新输入
+        operand.clear();
+        operands.clear();
+        opcodes.clear();
+        justCalculated = false;
+        ui->display->clear();
+    }
+
     operand = ui->display->text();
     QString btnText = qobject_cast<QPushButton*>(sender())->text();
 
@@ -46,19 +57,6 @@ void MainWindow::btnNumClicked()
     ui->display->setText(operand);
 }
 
-void MainWindow::btnBinaryOperatorClicked()
-{
-    if(!operand.isEmpty()){
-        if(operand[operand.length() - 1] == ".")
-        {
-            ui->display->setText("操作数无效");
-            return;
-        }
-        operands.push_back(operand);
-        operand.clear();
-    }
-    ui->display->setText(operand);
-}
 
 void MainWindow::on_btnPeriod_clicked()
 {
@@ -89,5 +87,90 @@ void MainWindow::on_btnClear_clicked()
     operand = "0";
 
     ui->display->setText(operand);
+}
+
+
+QString MainWindow::calculation(bool *ok){
+    if (operands.isEmpty())
+        return "0";
+
+    // 用第一个操作数作为初始值，不弹出
+    double result = operands.at(0).toDouble();
+
+    int opCount = opcodes.size();
+    int operandCount = operands.size();
+
+    // i 对应第 i 个运算符，操作数为 operands[i+1]
+    for (int i = 0; i < opCount ; ++i) {
+        if(i + 1 >= operandCount) break;
+
+        QString op = opcodes.at(i);
+        double operand2 = operands.at(i + 1).toDouble();
+
+        if (op == "+") {
+            result += operand2;
+        } else if (op == "-") {
+            result -= operand2;
+        } else if (op == "×") {
+            result *= operand2;
+        } else if (op == "÷") {
+            if (operand2 == 0) {
+                if (ok) *ok = false;
+                return "错误：除数为0";
+            }
+            result /= operand2;
+        }
+    }
+
+    // 清空缓存
+    operands.clear();
+    opcodes.clear();
+
+    if (ok) *ok = true;
+    return QString::number(result);
+}
+
+void MainWindow::btnBinaryOperatorClicked()
+{
+    if (justCalculated) { // 进行连算，清除 justCalculated 状态
+        justCalculated = false;
+    }
+    opcode = qobject_cast<QPushButton*>(sender())->text();
+    if(!operand.isEmpty()){ //当前操作数不为空
+        if(operand.endsWith(".")) //最后一位是小数点，取小数点前数字做操作数
+        {
+            operand.chop(1);
+        }
+        operands.push_back(operand); //有效操作数，入栈存储
+        operand.clear(); //清空当前操作数
+    }
+
+    opcodes.push_back(opcode); //有效操作符，入栈存储
+    ui->display->setText(opcode); // 显示当前操作符，提示用户当前状态
+}
+
+void MainWindow::on_btnEqual_clicked()
+{
+    if(!operand.isEmpty()){
+        if(operand.endsWith(".")) //最后一位是小数点，取小数点前数字做操作数
+        {
+            operand.chop(1);
+        }
+        operands.push_back(operand); //有效操作数，入栈存储
+        operand.clear(); //清空当前操作数
+    }
+
+    bool ok = true;
+    QString result = calculation(&ok);
+
+    if (!ok) {
+        ui->display->setText(result); // 错误信息
+    } else {
+        ui->display->setText(result);
+        // 将结果作为下一次计算的起点
+        operands.push_back(result);
+    }
+
+    justCalculated = true; //标记为刚计算完
 }
 

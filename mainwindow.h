@@ -19,7 +19,11 @@ public:
     ~MainWindow();
 
     QString operand = "";
+    QString opcode = "";
     QStack<QString> operands;
+    QStack<QString> opcodes;
+
+    QString calculation(bool *ok=NULL);
 
 private slots:
     void btnNumClicked();
@@ -31,7 +35,11 @@ private slots:
 
     void on_btnClear_clicked();
 
+    void on_btnEqual_clicked();
+
 private:
     Ui::MainWindow *ui;
+
+    bool justCalculated = false;
 };
 #endif // MAINWINDOW_H

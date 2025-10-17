@@ -196,7 +196,7 @@
        </widget>
       </item>
       <item row="3" column="3">
-       <widget class="QPushButton" name="btn_Multiple">
+       <widget class="QPushButton" name="btnMultiple">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
