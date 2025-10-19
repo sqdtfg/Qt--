@@ -2,7 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QKeyEvent>
 #include <QStack>
+#include <QMap>
+#include <QPushButton>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,6 +25,13 @@ public:
     QString opcode = "";
     QStack<QString> operands;
     QStack<QString> opcodes;
+    QMap<int, QPushButton*> digitBTNs;
+    QMap<int, QPushButton*> opBTNs;
+    QPushButton* backspaceBTN;
+    QPushButton* equalBTN;
+    QPushButton* periodBTN;
+    QPushButton* percentBTN;
+
 
     QString calculation(bool *ok=NULL);
 
@@ -37,6 +47,10 @@ private slots:
     void on_btnClear_clicked();
 
     void on_btnEqual_clicked();
+
+    virtual void keyPressEvent(QKeyEvent *event);
+
+    void on_btnClearAll_clicked();
 
 private:
     Ui::MainWindow *ui;
