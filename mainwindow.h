@@ -40,6 +40,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    bool justCalculated = false;
+    bool isEqual = false;
+    bool isBinaryOperator = false;
 };
 #endif // MAINWINDOW_H
