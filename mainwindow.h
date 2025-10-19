@@ -28,6 +28,7 @@ public:
 private slots:
     void btnNumClicked();
     void btnBinaryOperatorClicked();
+    void btnUnaryOperatorClicked();
 
     void on_btnPeriod_clicked();
 
@@ -42,5 +43,6 @@ private:
 
     bool isEqual = false;
     bool isBinaryOperator = false;
+    bool isUnaryOperator = false;
 };
 #endif // MAINWINDOW_H

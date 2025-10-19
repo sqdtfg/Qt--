@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <math.h>
 #include <QRegularExpression>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -23,6 +24,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnDivide, SIGNAL(clicked()), this, SLOT(btnBinaryOperatorClicked()));
     connect(ui->btnPlus, SIGNAL(clicked()), this, SLOT(btnBinaryOperatorClicked()));
     connect(ui->btnMinus, SIGNAL(clicked()), this, SLOT(btnBinaryOperatorClicked()));
+
+    connect(ui->btnInverse, SIGNAL(clicked()), this, SLOT(btnUnaryOperatorClicked()));
+    connect(ui->btnSqrt, SIGNAL(clicked()), this, SLOT(btnUnaryOperatorClicked()));
+    connect(ui->btnSquare, SIGNAL(clicked()), this, SLOT(btnUnaryOperatorClicked()));
+    connect(ui->btnPercentage, SIGNAL(clicked()), this, SLOT(btnUnaryOperatorClicked()));
+
 }
 
 MainWindow::~MainWindow()
@@ -32,6 +39,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::btnNumClicked()
 {
+    if(isUnaryOperator){
+        isUnaryOperator = false;
+        operand.clear();
+    }
+
     if(isBinaryOperator){ //输入第二个操作数
         isBinaryOperator = false;
         ui->display->clear();
@@ -96,9 +108,9 @@ void MainWindow::on_btnClear_clicked()
 
 QString MainWindow::calculation(bool *ok)
 {
-    if (operands.isEmpty()){ //操作数为空
+    if (operands.isEmpty() && isEqual){ //操作数为空
         opcodes.clear();
-        return "0";
+        return operand;
     }
 
     if(operands.size() == 1){ //只有一个操作数的情况
@@ -141,9 +153,8 @@ QString MainWindow::calculation(bool *ok)
 void MainWindow::btnBinaryOperatorClicked()
 {
     isBinaryOperator = true; //二元运算状态
-    if (isEqual) { // 进行连算，清除等号运算状态
-        isEqual = false;
-    }
+    isUnaryOperator = false;
+    isEqual = false;
 
     if(!operand.isEmpty()){ //当前操作数不为空
         if(operand.endsWith(".")) //最后一位是小数点，取小数点前数字做操作数
@@ -170,6 +181,37 @@ void MainWindow::btnBinaryOperatorClicked()
     }
 }
 
+void MainWindow::btnUnaryOperatorClicked()
+{
+    isUnaryOperator = true;
+    if(!operand.isEmpty()){
+        if(operand.endsWith(".")) //最后一位是小数点，取小数点前数字做操作数
+        {
+            operand.chop(1);
+        }
+
+        double result = operand.toDouble();
+        QString op = qobject_cast<QPushButton*>(sender())->text();
+
+        if(op == "%"){
+            result /= 100.0;
+        }else if(op == "1/x"){
+            if(result == 0){
+                ui->display->setText("错误，除数不能为0");
+                operand = "0";
+                return;
+            }
+            result = 1 / result;
+        }else if(op == "x²"){
+            result *= result;
+        }else{
+            result = sqrt(result);
+        }
+        ui->display->setText(QString::number(result));
+        operand = QString::number(result);
+    }
+}
+
 void MainWindow::on_btnEqual_clicked()
 {
     isEqual = true; //进行等号运算
@@ -190,6 +232,7 @@ void MainWindow::on_btnEqual_clicked()
     } else {
         ui->display->setText(result);
         operands.push_back(result); // 将结果作为下一次计算的起点
+        operand = result;
     }
 }
 
